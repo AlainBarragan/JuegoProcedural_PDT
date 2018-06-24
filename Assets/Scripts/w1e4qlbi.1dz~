@@ -1,0 +1,154 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class LevelCreator : MonoBehaviour
+{
+    enum direcciones
+    {
+        Derecha, 
+        Izquierda,
+        Arriba,
+        Abajo
+    }
+
+    class nodo
+    {
+        int x, y;
+        nodo anterior;
+        direcciones dir;
+        GameObject cuarto;
+
+        public void SetAnterior(nodo _anterior)
+        {
+            anterior = _anterior;
+        }
+
+        public void SetX (int _x)
+        {
+            x = _x;
+        }
+
+        public void SetY(int _y)
+        {
+            y = _y;
+        }
+
+        public void SetDireccion (direcciones _dir)
+        {
+            dir = _dir;
+        }
+
+        public nodo GetAnterior()
+        {
+            return anterior;
+        }
+
+        public int GetX ()
+        {
+            return x;
+        }
+
+        public int GetY()
+        {
+            return y;
+        }
+
+        public direcciones GetDireccion()
+        {
+            return dir;
+        }
+
+        public void SetCuarto(GameObject _cua)
+        {
+            cuarto = _cua;
+        }
+
+        public GameObject GetCuarto()
+        {
+            return cuarto;
+        }
+    }
+
+    public GameObject prefab_Cuarto;
+    public int nivel;
+
+    [Header("Paredes")]
+    public GameObject pared0;
+    public GameObject pared1;
+    public GameObject pared2;
+    public GameObject pared3;
+    public GameObject paredFinal;
+
+    [Header("Techos")]
+    public GameObject techo0;
+    public GameObject techo1;
+    public GameObject techo2;
+    public GameObject techo3;
+    public GameObject techoFinal;
+
+    direcciones direccion;
+    nodo[] cuartos;
+    nodo principal;
+    int num_Cuartos;
+
+	void Start ()
+    {
+        Debug.Log("Seed: " + Random.seed);
+        CrearCuartos();
+	}
+
+    void CrearCuartos()
+    {
+        num_Cuartos = Random.Range(7, 10) + nivel;
+        cuartos = new nodo[num_Cuartos];
+        for (int i = 0; i < num_Cuartos; i++)
+            cuartos[i] = new nodo();
+        principal = new nodo();
+
+        principal.SetX(0);
+        principal.SetY(0);
+        principal.SetCuarto(Instantiate(prefab_Cuarto, new Vector2(principal.GetX(), principal.GetY()), Quaternion.identity));
+
+        cuartos[0].SetAnterior(principal);
+
+        Instantiate(prefab_Cuarto, new Vector2(principal.GetX(), principal.GetY()), Quaternion.identity);
+
+        for (int i = 0; i < num_Cuartos; i++)
+        {
+            bool direccion_valida = false;
+            int intentos = 0;
+            int x = 0, y = 0;
+
+            while (!direccion_valida || (x==0 && y ==0))
+            {
+                direccion_valida = true;
+                direccion = (direcciones)Random.Range(0, 4);
+                switch (direccion)
+                {
+                    case direcciones.Arriba:
+                        x = cuartos[i].GetAnterior().GetX();
+                        y = cuartos[i].GetAnterior().GetY() + 15;
+                        break;
+                    case direcciones.Abajo:
+                        x = cuartos[i].GetAnterior().GetX();
+                        y = cuartos[i].GetAnterior().GetY() - 15;
+                        break;
+                    case direcciones.Derecha:
+                        x = cuartos[i].GetAnterior().GetX() + 30;
+                        y = cuartos[i].GetAnterior().GetY();
+                        break;
+                    case direcciones.Izquierda:
+                        x = cuartos[i].GetAnterior().GetX() - 30;
+                        y = cuartos[i].GetAnterior().GetY();
+                        break;
+                } //switch
+                for (int j = i-1; j >= 0; j--)
+                {
+                    if (cuartos[j].GetX() == x && cuartos[j].GetY() == y)
+                        direccion_valida = false;
+                }
+                intentos++;
+                if (intentos > 5)
+                {
+                    cuartos[i].SetAnterior(cuartos[i].GetAnterior().Ge
